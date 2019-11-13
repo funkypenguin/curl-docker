@@ -70,7 +70,7 @@ RUN apk add --no-cache nghttp2 ca-certificates
 ###############################################################
 # add non privileged curl user
 ###############################################################
-RUN addgroup -S curl_group && adduser -S curl_user -G curl_group
+RUN addgroup -S curl_group && adduser -S curl_user -G curl_group -u 12345
 
 ###############################################################
 # install curl built from builder
@@ -83,6 +83,8 @@ COPY --from=builder "/alpine/usr/local/bin/curl" "/usr/bin/curl"
 # copy and set entrypoint
 ###############################################################
 COPY "entrypoint.sh" "/entrypoint.sh"
-USER curl_user
+
+# Run as UID vs username, for maximum compatibility with Kubernetes PodSecurityPolicies (can be set to require numeric, non-root user)
+USER 12345
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["curl"]
